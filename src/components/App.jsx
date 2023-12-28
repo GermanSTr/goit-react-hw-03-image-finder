@@ -20,6 +20,7 @@ export class App extends Component {
     if (prevState.query !== query || prevState.page !== page) {
       const { hits, total } = await getImages(query, page);
       this.setState(prevState => ({ images: [...prevState.images, ...hits] }));
+      console.log(total);
     }
   }
 
