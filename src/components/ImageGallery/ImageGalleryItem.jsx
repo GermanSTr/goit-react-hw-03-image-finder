@@ -1,9 +1,15 @@
 import React from 'react';
+import { ImageItem } from 'styled';
 
-export const ImageGalleryItem = ({ webFormat, alt }) => {
+export const ImageGalleryItem = ({
+  webFormat,
+  alt,
+  id,
+  handleSelectedImage,
+}) => {
   return (
-    <li className="gallery-item">
-      <img src={webFormat} alt={alt} />
-    </li>
+    <ImageItem>
+      <img onClick={() => handleSelectedImage(id)} src={webFormat} alt={alt} />
+    </ImageItem>
   );
 };

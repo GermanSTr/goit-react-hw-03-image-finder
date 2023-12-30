@@ -2,36 +2,103 @@ import React, { Component } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { getImages } from './service/image-app';
+import { STATUSES } from 'utils/constans';
+import { Loader } from './Loader/Loader';
+import { ErrorMessage } from './ErrorMessage/ErrorMessage';
+import { LoadMoreBtn } from './LoadMoreBtn/LoadMoreBtn';
+import { AppDiv } from 'styled';
+import { ModalImage } from './ModalImage/ModalImage';
 
 export class App extends Component {
   state = {
     query: '',
-    status: 'idle',
+    status: STATUSES.idle,
     page: 1,
     images: [],
+    error: null,
+    isLoadMore: false,
+    randomID: 0,
+    isOpenModal: false,
+    modalData: null,
   };
 
   onSubmit = query => {
-    this.setState({ query });
+    this.setState({
+      query,
+      page: 1,
+      images: [],
+      isLoadMore: false,
+      randomID: Math.random(),
+    });
   };
 
-  async componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
+  answerImagesByQuery = async (query, page) => {
+    try {
+      this.setState({ status: STATUSES.pending });
       const { hits, total } = await getImages(query, page);
-      this.setState(prevState => ({ images: [...prevState.images, ...hits] }));
-      console.log(total);
+      this.setState(prevState => ({
+        images: [...prevState.images, ...hits],
+        isLoadMore: page < Math.ceil(total / 12),
+        status: STATUSES.success,
+      }));
+    } catch (error) {
+      this.setState({ error: error.message, status: STATUSES.error });
+    }
+  };
+
+  handleLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+
+  handleSelectedImage = profileID => {
+    const selectedImages = this.state.images.find(
+      image => image.id === profileID
+    );
+    this.setState({
+      isOpenModal: true,
+      modalData: selectedImages,
+    });
+  };
+
+  handleCloseModal = () => {
+    this.setState({ isOpenModal: false });
+  };
+
+  componentDidUpdate(_, prevState) {
+    const { query, page, randomID } = this.state;
+    if (
+      prevState.query !== query ||
+      prevState.page !== page ||
+      prevState.randomID !== randomID
+    ) {
+      this.answerImagesByQuery(query, page);
     }
   }
 
   render() {
-    const { images } = this.state;
-    console.log(images);
+    const { images, status, error, isLoadMore, isOpenModal, modalData } =
+      this.state;
+    const showImages = status === STATUSES.success && Array.isArray(images);
+
     return (
-      <div>
+      <AppDiv>
         <Searchbar onSubmit={this.onSubmit} />
-        <ImageGallery images={images} />
-      </div>
+        {status === STATUSES.pending && <Loader />}
+        {status === STATUSES.error && <ErrorMessage error={error} />}
+        {showImages && (
+          <ImageGallery
+            images={images}
+            handleSelectedImage={this.handleSelectedImage}
+          />
+        )}
+        {isLoadMore && <LoadMoreBtn handleLoadMore={this.handleLoadMore} />}
+        {isOpenModal && (
+          <ModalImage
+            modalData={modalData}
+            handleCloseModal={this.handleCloseModal}
+          />
+        )}
+      </AppDiv>
     );
   }
 }
