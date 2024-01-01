@@ -4,12 +4,16 @@ import { ImageItem } from 'styled';
 export const ImageGalleryItem = ({
   webFormat,
   alt,
-  id,
+  largeImageURL,
   handleSelectedImage,
 }) => {
   return (
     <ImageItem>
-      <img onClick={() => handleSelectedImage(id)} src={webFormat} alt={alt} />
+      <img
+        onClick={() => handleSelectedImage(largeImageURL, alt)}
+        src={webFormat}
+        alt={alt}
+      />
     </ImageItem>
   );
 };

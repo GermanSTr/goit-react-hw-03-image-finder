@@ -8,7 +8,7 @@ import {
 } from 'styled';
 export default class Searchbar extends Component {
   state = {
-    query: {},
+    query: '',
   };
 
   handleSubmitForm = evt => {

@@ -1,16 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { LoadMoreButton } from 'styled';
 
-export class LoadMoreBtn extends Component {
-  loadMoreClick = () => {
-    this.props.handleLoadMore();
-  };
+const LoadMoreBtn = ({ handleLoadMore }) => {
+  return (
+    <LoadMoreButton onClick={handleLoadMore} type="button">
+      Load more
+    </LoadMoreButton>
+  );
+};
 
-  render() {
-    return (
-      <LoadMoreButton onClick={this.loadMoreClick} type="button">
-        Load more
-      </LoadMoreButton>
-    );
-  }
-}
+export { LoadMoreBtn };

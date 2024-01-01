@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
-import { getImages } from './service/image-app';
+import { getImages } from '../service/image-app';
 import { STATUSES } from 'utils/constans';
 import { Loader } from './Loader/Loader';
 import { ErrorMessage } from './ErrorMessage/ErrorMessage';
@@ -21,6 +21,17 @@ export class App extends Component {
     isOpenModal: false,
     modalData: null,
   };
+
+  componentDidUpdate(_, prevState) {
+    const { query, page, randomID } = this.state;
+    if (
+      prevState.query !== query ||
+      prevState.page !== page ||
+      prevState.randomID !== randomID
+    ) {
+      this.answerImagesByQuery(query, page);
+    }
+  }
 
   onSubmit = query => {
     this.setState({
@@ -50,13 +61,10 @@ export class App extends Component {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
-  handleSelectedImage = profileID => {
-    const selectedImages = this.state.images.find(
-      image => image.id === profileID
-    );
+  handleSelectedImage = (largeImageURL, alt) => {
     this.setState({
       isOpenModal: true,
-      modalData: selectedImages,
+      modalData: { largeImageURL, alt },
     });
   };
 
@@ -64,28 +72,18 @@ export class App extends Component {
     this.setState({ isOpenModal: false });
   };
 
-  componentDidUpdate(_, prevState) {
-    const { query, page, randomID } = this.state;
-    if (
-      prevState.query !== query ||
-      prevState.page !== page ||
-      prevState.randomID !== randomID
-    ) {
-      this.answerImagesByQuery(query, page);
-    }
-  }
-
   render() {
     const { images, status, error, isLoadMore, isOpenModal, modalData } =
       this.state;
-    const showImages = status === STATUSES.success && Array.isArray(images);
+    const showImageGallery = status === STATUSES.success && images.length === 0;
 
     return (
       <AppDiv>
         <Searchbar onSubmit={this.onSubmit} />
         {status === STATUSES.pending && <Loader />}
         {status === STATUSES.error && <ErrorMessage error={error} />}
-        {showImages && (
+        {showImageGallery && <p>No image found...</p>}
+        {!!images.length && (
           <ImageGallery
             images={images}
             handleSelectedImage={this.handleSelectedImage}
